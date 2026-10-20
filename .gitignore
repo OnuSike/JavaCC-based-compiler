@@ -1,0 +1,8 @@
+*.class
+MiniJava.java
+MiniJavaTokenManager.java
+MiniJavaConstants.java
+Token.java
+TokenMgrError.java
+ParseException.java
+SimpleCharStream.java

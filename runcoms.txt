@@ -1,0 +1,3 @@
+javacc MiniJava.jj
+javac *.java
+java MiniJava < test.txt

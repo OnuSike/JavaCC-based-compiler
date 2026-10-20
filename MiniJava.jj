@@ -1,0 +1,212 @@
+/* Copyright (c) 2006, Sun Microsystems, Inc.
+ * All rights reserved.
+ * 
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ * 
+ *     * Redistributions of source code must retain the above copyright notice,
+ *       this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the Sun Microsystems, Inc. nor the names of its
+ *       contributors may be used to endorse or promote products derived from
+ *       this software without specific prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+
+options {
+  LOOKAHEAD = 1;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = true;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = false;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(MiniJava)
+
+/** Simple brace matcher. */
+public class MiniJava {
+
+  /** Main entry point. */
+  public static void main(String args[]) throws ParseException {
+    MiniJava parser = new MiniJava(System.in);
+    parser.Program();
+    System.out.println("Parsed OK");
+  }
+
+}
+
+PARSER_END(MiniJava)
+
+SKIP : { " " | "\t" | "\n" | "\r" }
+
+TOKEN : {
+  < CLASS: "class" >
+| < LBRACE: "{" >
+| < RBRACE: "}" >
+| < PUBLIC: "public" >
+| < STATIC: "static" >
+| < VOID: "void" >
+| < MAIN: "main" >
+| < STRING: "String" >
+| < LPAREN: "(" >
+| < RPAREN: ")" >
+| < LBRACKET: "[" >
+| < RBRACKET: "]" >
+| < IF: "if" >
+| < ELSE: "else" >
+| < WHILE: "while" >
+| < PRINT: "System.out.println" >
+| < EXTENDS: "extends" >
+| < RETURN: "return" >
+| < SEMICOL: ";" >
+| < COMMA: "," >
+| < DOT: ".">
+| < EXCL: "!" >
+| < LENGTH: "length" >
+| < INT: "int" >
+| < BOOLEAN: "boolean" >
+| < TRUE: "true" >
+| < FALSE: "false" >
+| < THIS: "this" >
+| < NEW: "new" >
+| < EQ: "=" >
+| < PLUS: "+" >
+| < MINUS: "-" >
+| < MULT: "*" >
+| < DIV: "/" >
+| < AND: "&&" >
+| < LT: "<" >
+| < INTEGER_LITERAL: (["0"-"9"])+ >
+| < IDENTIFIER: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
+}
+
+void Program() :
+{}
+{
+  MainClass() ( ClassDecl() )* <EOF>
+}
+
+void MainClass() :
+{}
+{
+  <CLASS> <IDENTIFIER> <LBRACE> <PUBLIC> <STATIC> <VOID> <MAIN> <LPAREN> <STRING> <LBRACKET> <RBRACKET> <IDENTIFIER> <RPAREN> <LBRACE> Statement() <RBRACE> <RBRACE>
+}
+
+void ClassDecl() :
+{}
+{
+  LOOKAHEAD(3) <CLASS> <IDENTIFIER> <LBRACE> ( VarDecl() )* ( MethodDecl() )* <RBRACE>
+| <CLASS> <IDENTIFIER> <EXTENDS> <IDENTIFIER> <LBRACE> ( VarDecl() )* ( MethodDecl() )* <RBRACE>
+}
+
+void VarDecl() :
+{}
+{
+  Type() <IDENTIFIER> <SEMICOL>
+}
+
+void MethodDecl() :
+{}
+{
+  <PUBLIC> Type() <IDENTIFIER> <LPAREN> FormalList() <RPAREN> <LBRACE> ( LOOKAHEAD(2) VarDecl() )* ( Statement() )* <RETURN> Exp() <SEMICOL> <RBRACE>
+}
+
+void FormalList() :
+{}
+{
+  [ Type() <IDENTIFIER> ( FormalRest() )* ]
+}
+
+void FormalRest() : 
+{}
+{
+  <COMMA> Type() <IDENTIFIER>
+}
+
+void Type() :
+{}
+{
+  <INT> [ <LBRACKET> <RBRACKET> ]
+| <BOOLEAN>
+| <IDENTIFIER>
+}
+
+void Statement() :
+{}
+{
+  <LBRACE> ( Statement() )* <RBRACE>
+| <IF> <LPAREN> Exp() <RPAREN> Statement() <ELSE> Statement()
+| <WHILE> <LPAREN> Exp() <RPAREN> Statement()
+| <PRINT> <LPAREN> Exp() <RPAREN> <SEMICOL>
+| LOOKAHEAD(2) <IDENTIFIER> <EQ> Exp() <SEMICOL>
+| <IDENTIFIER> <LBRACKET> Exp() <RBRACKET> <EQ> Exp() <SEMICOL>
+}
+
+void Exp() :
+{}
+{
+  PrimaryExp() ( Op() PrimaryExp() | <LBRACKET> Exp() <RBRACKET> | LOOKAHEAD(2) <DOT> <LENGTH> | <DOT> <IDENTIFIER> <LPAREN> ExpList() <RPAREN> )*
+}
+
+void PrimaryExp() :
+{}
+{
+  <INTEGER_LITERAL>
+| <TRUE>
+| <FALSE>
+| <IDENTIFIER>
+| <THIS>
+| LOOKAHEAD(2) <NEW> <INT> <LBRACKET> Exp() <RBRACKET>
+| <NEW> <IDENTIFIER> <LPAREN> <RPAREN>
+| <EXCL> PrimaryExp()
+| <LPAREN> Exp() <RPAREN>
+}
+
+void Op() :
+{}
+{
+  <PLUS>
+| <MINUS>
+| <MULT>
+| <DIV>
+| <AND>
+| <LT>
+}
+
+void ExpList() :
+{}
+{
+  [ Exp() ( ExpRest() )* ]
+}
+
+void ExpRest() :
+{}
+{
+  <COMMA> Exp()
+}

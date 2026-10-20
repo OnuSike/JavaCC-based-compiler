@@ -1,0 +1,39 @@
+class Main {
+  public static void main ( String [] args ) {
+    System.out.println ( 1 + 2 * 3 );
+  }
+}
+
+class Animal {
+  int age;
+  public int getAge ( ) {
+    return age;
+  }
+}
+
+class Dog extends Animal {
+  int [] data;
+  boolean happy;
+
+  public int add ( int x, int y ) {
+    return x + y;
+  }
+
+  public int run ( int n, boolean flag ) {
+    int total;
+    int i;
+    Animal a;
+    total = 0;
+    i = 0;
+    while ( i < n ) {
+      total = total + i * 2;
+      i = i + 1;
+    }
+    if ( flag && happy ) total = total - 1; else total = total + 1;
+    data = new int [ n ];
+    data [ 0 ] = this.add ( total, 1 );
+    a = new Animal ( );
+    System.out.println ( a.getAge ( ) + data.length );
+    return ( total + 1 ) * 2;
+  }
+}
