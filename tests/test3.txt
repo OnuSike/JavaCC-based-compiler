@@ -1,0 +1,33 @@
+class Expr {
+  public static void main ( String [] args ) {
+    {
+      x = 1;
+      x = a + b;
+      x = a - b - c;
+      x = 1 + 2 * 3;
+      x = ( 1 + 2 ) * 3;
+      x = a * b / c;
+      x = a < b;
+      x = a + b <= c * 2;
+      x = a == b;
+      x = a != b;
+      x = a >= 10;
+      x = a && b;
+      x = a || b;
+      x = a && b || c;
+      x = a || b && c;
+      x = !a;
+      x = !a && b;
+      x = a && ( c || e ) && !f && g;
+      x = ( a < b ) && ( c < d );
+      x = ( 1 + 2 ) * 3 < 10;
+      x = true;
+      x = false && a;
+      x = !( a && b );
+      x = ( a && b ) || c;
+      if ( a && b ) x = 1; else x = 2;
+      while ( i < 10 && !done ) i = i + 1;
+      System.out.println ( a + b * 2 );
+    }
+  }
+}

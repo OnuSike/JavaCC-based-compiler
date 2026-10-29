@@ -100,8 +100,14 @@ TOKEN : {
 | < MINUS: "-" >
 | < MULT: "*" >
 | < DIV: "/" >
-| < AND: "&&" >
 | < LT: "<" >
+| < GT: ">" >
+| < LE: "<=" >
+| < GE: ">=" >
+| < EQEQ: "==" >
+| < NEQ: "!=" >
+| < OR: "||" >
+| < AND: "&&" >
 | < INTEGER_LITERAL: (["0"-"9"])+ >
 | < IDENTIFIER: ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","0"-"9","_"] )* >
 }
@@ -168,6 +174,7 @@ void Statement() :
 | <IDENTIFIER> <LBRACKET> Exp() <RBRACKET> <EQ> Exp() <SEMICOL>
 }
 
+/*
 void Exp() :
 {}
 {
@@ -209,4 +216,104 @@ void ExpRest() :
 {}
 {
   <COMMA> Exp()
+}
+*/
+
+// 3.1 Logical expressions
+
+// Exp ::= Condition
+void Exp() :
+{}
+{
+  Cond()
+}
+// TODO: implementation for "new". "new" broke
+// TODO: implementation for ".". obj.met()
+
+// Condition ::= LogExp
+void Cond() :
+{}
+{
+  LogExp()
+}
+
+// LogExp ::= LogExpTerm ("||" LogExpTerm)*
+void LogExp() :
+{}
+{
+  LogExpTerm() ( <OR> LogExpTerm() )*
+}
+
+// LogExpTerm ::= LogExpFactor ("&&" LogExpFactor)*
+void LogExpTerm() :
+{}
+{
+  LogExpFactor() ( <AND> LogExpFactor() )*
+}
+
+// LogExpFactor ::= "!" LogExp | "(" LogExp ")" | RelExp | "true" | "false"
+void LogExpFactor() :
+{}
+{
+  <EXCL> LogExpFactor()
+| RelExp()
+| <TRUE>
+| <FALSE>
+}
+// <LPAREN> LogExp() <RPAREN> clash with Factor, retired the rule
+// <EXCL> LogExp() -> <EXCL> LogExpFactor() ("!" swallows the entire LogExp()?     ex: !a || b )
+
+// 3.2 Relational expressions
+
+// RelExp := ArExp RelOp ArExp | ArExp
+void RelExp() :
+{}
+{
+  ArExp() [ RelOp() ArExp() ]
+}
+
+// RelOp ::= "<" | ">" | "<=" | ">=" | "==" | "!="
+void RelOp() :
+{}
+{
+  <LT> | <GT> | <LE> | <GE> | <EQEQ> | <NEQ>
+}
+// TODO: <EQEQ> same level as <LT>
+
+
+// 3.3 Arithmetical expressions
+
+// ArExp :: = Term (AdOp Term)*
+void ArExp() :
+{}
+{
+  Term() ( AdOp() Term() )*
+}
+
+// AdOp ::= "+" | "-"
+void AdOp() :
+{}
+{
+  <PLUS> | <MINUS>
+}
+
+// Term ::= Factor (MulOp Factor)*
+void Term() :
+{}
+{
+  Factor() ( MulOp() Factor() )*
+}
+
+// MulOp ::= "*" | "/"
+void MulOp() :
+{}
+{
+  <MULT> | <DIV>
+}
+
+// Factor ::= "(" ArExp ")" | ID | INT
+void Factor() :
+{}
+{
+  <LPAREN> ArExp() <RPAREN> | <IDENTIFIER> | <INTEGER_LITERAL>
 }
